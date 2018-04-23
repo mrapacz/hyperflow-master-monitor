@@ -1,0 +1,10 @@
+sudo: required
+
+services:
+  - docker
+
+script:
+  - docker --version  # document the version travis is using
+  - docker build -t krysp89/hyperflow-master-monitor .
+  - docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
+  - docker push krysp89/hyperflow-master-monitor
