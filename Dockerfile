@@ -22,7 +22,6 @@ CMD service redis-server start && \
     ./monitor-rabbitmq-influxdb.js & \
     ./monitor-cluster-influxdb.js & \
     ./monitor-alarms.js & \
-    ./cloudWatchMetricNotify.js & \
     tail -F /var/log/rabbitmq/startup_err
 
 EXPOSE 5672

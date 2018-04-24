@@ -18,14 +18,24 @@ var config={accessKeyId: AWS_ACCESS_KEY_ID, secretAccessKey: AWS_SECRET_ACCESS_K
 var cloudwatch = new AWS.CloudWatch(config);
 
 amqp.connect(AMQP_URL, function(err, conn) {
-  conn.createChannel(function(err, ch) {
+  if(err)
+  {
+    console.log("err %j",err);
+  }else
+  {
+    console.log("connected");
+  }
 
+  conn.createChannel(function(err, ch) {
+    console.log("create channel");
+    ch.assertQueue(QUEUE_NAME, {durable: true});
+
+    
     setInterval(function(){
       var mcount=0;
-      ch.assertQueue(QUEUE_NAME, {durable: true});
       ch.checkQueue(QUEUE_NAME, function(err, ok) {
         
-        //console.log('messageCount:'+ok.messageCount);
+        console.log('MetricNotify messageCount:'+ok.messageCount);
         mcount =ok.messageCount;
 
         var params = {
@@ -45,8 +55,8 @@ amqp.connect(AMQP_URL, function(err, conn) {
           };
     
           cloudwatch.putMetricData(params, function(err, data) {
-            // if (err) console.log(err, err.stack); 
-            // else     console.log(data);           
+            if (err) console.log(err, err.stack); 
+            else     console.log(data);           
           });
       });
 
