@@ -22,7 +22,6 @@ CMD service redis-server start && \
     sleep 30s && \
     ./monitor-rabbitmq-influxdb.js & \
     ./monitor-cluster-influxdb.js & \
-    ./monitor-alarms.js & \
-    ./cloudWatchMetricNotify.js
+    ./monitor-alarms.js 
 
 EXPOSE 5672

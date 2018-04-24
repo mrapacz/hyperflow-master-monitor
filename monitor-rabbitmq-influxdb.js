@@ -5,6 +5,20 @@ var QUEUE_NAME = process.env.QUEUE_NAME ? process.env.QUEUE_NAME : 'hyperflow.jo
 
 var INFLUX_DB = process.env.INFLUX_DB ? process.env.INFLUX_DB : 'http://127.0.0.1:8086/hyperflow_influxdb';
 
+
+var HYPERFLOW_METRIC_NAME = process.env.HYPERFLOW_METRIC_NAME ? process.env.HYPERFLOW_METRIC_NAME : "QueueLength";
+var HYPERFLOW_METRIC_NAMESPACE = process.env.HYPERFLOW_METRIC_NAMESPACE ? process.env.HYPERFLOW_METRIC_NAMESPACE : 'hyperflow';
+var CLUSET_NAME = process.env.CLUSET_NAME ? process.env.CLUSET_NAME : 'ecs_test_cluster_hyperflow';
+
+var AWS_ACCESS_KEY_ID = process.env.AWS_ACCESS_KEY_ID ? process.env.AWS_ACCESS_KEY_ID : "";
+var AWS_SECRET_ACCESS_KEY = process.env.AWS_SECRET_ACCESS_KEY ? process.env.AWS_SECRET_ACCESS_KEY : "";
+var AWS_REGION = process.env.AWS_REGION ? process.env.AWS_REGION : 'us-east-1';
+
+var AWS = require('aws-sdk');
+
+var config={accessKeyId: AWS_ACCESS_KEY_ID, secretAccessKey: AWS_SECRET_ACCESS_KEY,region: AWS_REGION};
+var cloudwatch = new AWS.CloudWatch(config);
+
 var amqp = require('amqplib/callback_api');
 const Influx = require('influxdb-nodejs');
 
@@ -56,6 +70,30 @@ amqp.connect(AMQP_URL, function(err, conn) {
                 })
                 .then(() => console.info('write point success'))
                 .catch(console.error);
+              
+                //notyfy cloudwatch
+                var params = {
+                  MetricData: [ 
+                    {
+                      MetricName: HYPERFLOW_METRIC_NAME, 
+                      Value: mcount,
+                      Dimensions: [
+                        {
+                          Name: 'ClusterName', /* required */
+                          Value: CLUSET_NAME /* required */
+                        }]
+                    }
+                  ],
+                  Namespace: HYPERFLOW_METRIC_NAMESPACE 
+                  
+                };
+          
+                cloudwatch.putMetricData(params, function(err, data) {
+                  if (err) console.log(err, err.stack); 
+                  else     console.log(data);           
+                });
+              
+
               }
             });
       }, 1000);
