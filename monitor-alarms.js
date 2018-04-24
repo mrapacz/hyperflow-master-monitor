@@ -12,7 +12,7 @@ var AWS_SECRET_ACCESS_KEY = process.env.AWS_SECRET_ACCESS_KEY ? process.env.AWS_
 var AWS = require('aws-sdk');
 //var amqp = require('amqplib/callback_api');
 
-var config={region: AWS_REGION};
+var config={accessKeyId: AWS_ACCESS_KEY_ID, secretAccessKey: AWS_SECRET_ACCESS_KEY,region: AWS_REGION};
 
 
 var ecs = new AWS.ECS(config);
@@ -67,7 +67,7 @@ setInterval(function(){
 
             var calculatedAlarmValue=0;
 
-            if(data.MetricAlarms[1].StateValue == 'ALARM' || data.MetricAlarms[1].StateValue == 'ALARM')
+            if(data.MetricAlarms.length>0 &&(data.MetricAlarms[1].StateValue == 'ALARM' || data.MetricAlarms[0].StateValue == 'ALARM'))
             {
                 calculatedAlarmValue = 1;
             }
