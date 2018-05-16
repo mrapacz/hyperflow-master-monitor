@@ -10,7 +10,8 @@ RUN apt-get update && apt-get install -y \
   rabbitmq-server
 
 #enable guest user to connect from remote host
-RUN echo "[{rabbit, [{loopback_users, []}]}]." > /etc/rabbitmq/rabbitmq.config
+RUN echo "[{rabbit, [{loopback_users, []}]}]." > /etc/rabbitmq/rabbitmq.config && \
+    rabbitmq-plugins enable rabbitmq_management
 
 COPY . /hyperflow-master-monitor
 WORKDIR /hyperflow-master-monitor
