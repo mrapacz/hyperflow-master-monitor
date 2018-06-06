@@ -20,9 +20,10 @@ RUN npm install amqplib influxdb-nodejs aws-sdk
 
 CMD service redis-server start && \
     service rabbitmq-server start && \
-    sleep 30s && \
+    sleep 5s && \
     ./monitor-rabbitmq-influxdb.js & \
     ./monitor-cluster-influxdb.js & \
-    ./monitor-alarms.js 
+    ./monitor-alarms.js  & \
+    tail -F /var/log/rabbitmq/startup_err
 
 EXPOSE 5672

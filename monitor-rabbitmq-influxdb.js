@@ -24,10 +24,6 @@ const Influx = require('influxdb-nodejs');
 
 const client = new Influx(INFLUX_DB);
 
-// i --> integer
-// s --> string
-// f --> float
-// b --> boolean
 const fieldSchema = {
     QueueLength: 'i',
     consumerCount: 'i',
@@ -47,12 +43,41 @@ console.log(AMQP_URL);
 
 var tryAgain = true;
 
+function notifyCloudWatchMetric(value)
+{
+  console.log("value %d",value);
+  var params = {
+    MetricData: [ 
+      {
+        MetricName: HYPERFLOW_METRIC_NAME, 
+        Value: value,
+        Dimensions: [
+          {
+            Name: 'ClusterName', 
+            Value: CLUSET_NAME
+          }]
+      }
+    ],
+    Namespace: HYPERFLOW_METRIC_NAMESPACE 
+    
+  };
+
+  cloudwatch.putMetricData(params, function(err, data) {
+    if (err) console.log(err, err.stack); 
+    else     console.log(data);           
+  });
+}
+
+
+
 amqp.connect(AMQP_URL, function(err, conn) {
 
   console.log("ok after connect");
     conn.createChannel(function(err, ch) {
         console.log("createch err: %j", err);
         tryAgain = false;
+
+        timeout = null;
       setInterval(function(){
         console.log("setInterval");
         ch.assertQueue(QUEUE_NAME, {durable: true});
@@ -62,6 +87,26 @@ amqp.connect(AMQP_URL, function(err, conn) {
               {
                 console.log("Session: %j", ok);
                 mcount =ok.messageCount;
+
+                if(mcount == 0 && timeout==null)
+                {
+                  if(ok.consumerCount > 1)
+                  {
+                    console.log("START TIMER");
+                    timeout=setTimeout(function(){
+                    console.log("TIMEOUT");
+                    notifyCloudWatchMetric(-1)
+                    timeout=null;
+                  },200000)
+                  }
+                }
+                if(mcount > 0 && timeout!=null)
+                {
+                  console.log("clear timer");
+                  clearTimeout(timeout);
+                  timeout =null;
+                }
+
                 client.write('hyperflow_rabbitmq_monitor')
                 .field({
                   QueueLength: ok.messageCount,
@@ -71,29 +116,7 @@ amqp.connect(AMQP_URL, function(err, conn) {
                 .then(() => console.info('write point success'))
                 .catch(console.error);
               
-                //notyfy cloudwatch
-                var params = {
-                  MetricData: [ 
-                    {
-                      MetricName: HYPERFLOW_METRIC_NAME, 
-                      Value: mcount,
-                      Dimensions: [
-                        {
-                          Name: 'ClusterName', /* required */
-                          Value: CLUSET_NAME /* required */
-                        }]
-                    }
-                  ],
-                  Namespace: HYPERFLOW_METRIC_NAMESPACE 
-                  
-                };
-          
-                cloudwatch.putMetricData(params, function(err, data) {
-                  if (err) console.log(err, err.stack); 
-                  else     console.log(data);           
-                });
-              
-
+                notifyCloudWatchMetric(mcount);
               }
             });
       }, 1000);
