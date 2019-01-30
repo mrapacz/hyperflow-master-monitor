@@ -16,7 +16,7 @@ RUN echo "[{rabbit, [{loopback_users, []}]}]." > /etc/rabbitmq/rabbitmq.config &
 COPY . /hyperflow-master-monitor
 WORKDIR /hyperflow-master-monitor
 
-RUN npm install amqplib influxdb-nodejs aws-sdk
+RUN npm install amqplib influxdb-nodejs aws-sdk prom-client
 
 CMD service redis-server start && \
     service rabbitmq-server start && \
