@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 
 var AWS_REGION = process.env.AWS_REGION ? process.env.AWS_REGION : 'us-east-1';
-var INFLUX_DB = process.env.INFLUX_DB ? process.env.INFLUX_DB : 'http://127.0.0.1:8086/hyperflow_influxdb';
 var CLUSTER_NAME = process.env.CLUSTER_NAME ? process.env.CLUSTER_NAME : 'ecs_test_cluster_hyperflow';
 
 var AWS_ACCESS_KEY_ID = process.env.AWS_ACCESS_KEY_ID ? process.env.AWS_ACCESS_KEY_ID : "";
