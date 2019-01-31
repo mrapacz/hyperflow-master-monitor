@@ -25,7 +25,7 @@ const Influx = require('influxdb-nodejs');
 const client = new Influx(INFLUX_DB);
 
 var prometheus = require('prom-client');
-
+var http = require('http');
 var metrics = {};
 
 prometheus.collectDefaultMetrics();

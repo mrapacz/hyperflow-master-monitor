@@ -20,7 +20,7 @@ var cloudwatch = new AWS.CloudWatch(config);
 
 const Influx = require('influxdb-nodejs');
 const client = new Influx(INFLUX_DB);
-
+var http = require('http');
 
 var prometheus = require('prom-client');
 
